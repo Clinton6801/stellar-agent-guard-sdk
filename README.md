@@ -186,6 +186,46 @@ reused, so callers that cannot tolerate that tradeoff should leave caching off,
 use a shorter TTL, provide a policy revision, and invalidate after policy or
 account-state changes.
 
+### Deterministic time control in tests (Clock injection)
+
+Time-dependent operations (cache TTL, transaction polling) support optional `Clock` injection for deterministic testing without real delays.
+
+**For tests**, use `FakeClock` to control time:
+
+```ts
+import { FakeClock, PreFlightInterceptor } from "stellar-agent-guard-sdk";
+
+test("cache entry expires", async () => {
+  const clock = new FakeClock(0);
+  const interceptor = new PreFlightInterceptor({
+    server,
+    guard,
+    agent,
+    source,
+    cache: { ttlMs: 5000 },
+    clock, // Inject the fake clock
+  });
+
+  const decision1 = await interceptor.check(call);
+
+  // Advance clock without real delays
+  clock.advance(6000); // Skip to t=6000ms (past the 5000ms TTL)
+
+  const decision2 = await interceptor.check(call); // Cache expired, fresh lookup
+});
+```
+
+**For production**, no action is needed: modules default to the system clock. The `Clock` interface is purely optional and for testing.
+
+Key methods on `FakeClock`:
+
+- `now()` — returns current time in milliseconds
+- `sleep(ms)` — returns a promise (resolves instantly when time allows)
+- `advance(ms)` — move the clock forward deterministically
+- `setTime(ms)` — set clock to an absolute time
+
+Time-dependent modules (preflight cache, transaction polling) accept an optional `clock` parameter. When omitted, they use the system clock (`Date.now()`, real `setTimeout`). Tests pass a `FakeClock` to eliminate real waits and make timing deterministic. For full guidance, see [CONTRIBUTING.md](CONTRIBUTING.md) under "Deterministic time control in tests".
+
 ### Pipeline step observability (`onStep`)
 
 `invoke()` accepts an **optional** `onStep` callback. When omitted, behavior is
