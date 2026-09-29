@@ -114,18 +114,27 @@ committable); never commit the filled-in copy.
 
 ```ts
 import { Keypair, rpc } from "@stellar/stellar-sdk";
-import { PreFlightInterceptor } from "stellar-agent-guard-sdk";
+import { PreFlightInterceptor, isContractAddress, type ContractAddress } from "stellar-agent-guard-sdk";
+
+// Validate contract address from environment
+const guardAddress = process.env.GUARD_ADDRESS;
+if (!isContractAddress(guardAddress)) {
+  throw new Error(`Invalid guard contract address: ${guardAddress}`);
+}
+
+// For known hardcoded addresses, use type assertion
+const contractAddress = "CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB" as ContractAddress;
 
 const interceptor = new PreFlightInterceptor({
   server: new rpc.Server("https://soroban-testnet.stellar.org"),
   networkPassphrase: "Test SDF Network ; September 2015",
-  guard: "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44",
+  guard: guardAddress, // Type-safe: validated as ContractAddress
   agent: Keypair.fromSecret(process.env.AGENT_SECRET!),
   source: Keypair.fromSecret(process.env.SOURCE_SECRET!),
 });
 
 const decision = await interceptor.check({
-  contract: "CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB",
+  contract: contractAddress,
   fn: "transfer",
   args: [/* from, to, amount */],
 });
@@ -138,6 +147,28 @@ if (decision.kind === "admissible") {
   console.log("Undetermined (fails closed)");
 }
 ```
+
+#### Branded Address Types (v0.2.0+)
+
+This version introduces **branded types** to distinguish contract addresses (C...) from account addresses (G...) at compile time, preventing a common source of bugs where an address is used in the wrong context.
+
+**Type Guards:**
+
+```ts
+import { 
+  isContractAddress,    // Validates C... addresses
+  isAccountAddress,     // Validates G... addresses
+  isStrKeyAddress,      // Validates any StrKey (C... or G...)
+  isPublicKeyHex,       // Validates 64-char hex public keys
+} from "stellar-agent-guard-sdk";
+
+// Runtime validation before use
+if (!isContractAddress(userInput)) {
+  throw new Error("Expected contract address (C...)");
+}
+```
+
+**Migration:** If upgrading from an earlier version, see [MIGRATION.md](./MIGRATION.md) for guidance on updating your code to use typed addresses.
 
 #### Throw vs. Verdict Contract
 

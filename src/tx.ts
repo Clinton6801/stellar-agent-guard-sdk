@@ -62,6 +62,7 @@ import {
   SimulationError,
 } from "./errors.ts";
 import { systemClock, type Clock } from "./clock.ts";
+import type { ContractAddress } from "./policy.ts";
 
 /** Extra ledger validity granted to a guard auth entry when it is signed. */
 const SIG_EXPIRATION_LEDGERS = 10_000;
@@ -71,7 +72,7 @@ const MAX_RESOURCE_FEE = 2n ** 64n - 1n;
 
 export interface ContractCall {
   /** Contract address (C…) to invoke. */
-  contract: string;
+  contract: ContractAddress;
   /** Function name as it appears in the contract spec. */
   fn: string;
   args: xdr.ScVal[];

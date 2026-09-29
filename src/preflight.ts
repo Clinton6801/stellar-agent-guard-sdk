@@ -32,6 +32,7 @@ import { resourceBreakdownFromSimulation, type ResourceBreakdown } from "./cost.
 import {
   extractTransferAmount,
   fetchGuardPolicyAndWindow,
+  type ContractAddress,
   type PolicyConfig,
 } from "./policy.ts";
 import { GuardBlockedError, explainReason } from "./reasons.ts";
@@ -294,7 +295,7 @@ export interface PreFlightConfig {
   server: rpc.Server;
   networkPassphrase: string;
   /** The guarded smart account whose policy is being enforced. */
-  guard: string;
+  guard: ContractAddress;
   /**
    * The key registered as the account's agent, used to sign the auth entry: an
    * `AgentSigner` for any signing setup, or a plain Ed25519 `Keypair` for the

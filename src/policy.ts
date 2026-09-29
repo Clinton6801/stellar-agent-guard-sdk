@@ -17,14 +17,110 @@ import { Address, nativeToScVal, rpc, scValToNative, xdr } from "@stellar/stella
 import { ContractResponseError, PolicyDecodeError } from "./errors.ts";
 import type { ContractCall } from "./tx.ts";
 
+/**
+ * Branded types for address validation at compile time.
+ * These use TypeScript's nominal typing (brand pattern) to distinguish
+ * between contract addresses (C...), account addresses (G...), and raw
+ * public key hex strings.
+ */
+
+/** A valid Stellar StrKey address (either G... or C...). */
+export type StrKeyAddress = string & { readonly __brand: "StrKeyAddress" };
+
+/** A valid Stellar contract address (C...). */
+export type ContractAddress = string & { readonly __brand: "ContractAddress" };
+
+/** A valid Stellar account address (G...). */
+export type AccountAddress = string & { readonly __brand: "AccountAddress" };
+
+/** A valid raw public key in hex format (64 characters). */
+export type PublicKeyHex = string & { readonly __brand: "PublicKeyHex" };
+
+/**
+ * Type guards for branded address types.
+ * These perform prefix and length validation according to Stellar StrKey format.
+ */
+
+/**
+ * Check if a value is a valid Stellar StrKey address (either G... or C...).
+ * @param value - The value to validate
+ * @returns True if valid, false otherwise
+ */
+export function isStrKeyAddress(value: unknown): value is StrKeyAddress {
+  if (typeof value !== "string") return false;
+  try {
+    new Address(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a value is a valid Stellar contract address (C...).
+ * Validates prefix, length (56 characters), and StrKey checksum format.
+ * @param value - The value to validate
+ * @returns True if valid, false otherwise
+ */
+export function isContractAddress(value: unknown): value is ContractAddress {
+  if (typeof value !== "string") return false;
+  if (!value.startsWith("C")) return false;
+  if (value.length !== 56) return false;
+  // Additional validation: contract addresses use base32 encoding after the prefix
+  // Valid base32 characters: A-Z, 2-7
+  const base32Part = value.slice(1); // Remove the 'C' prefix
+  if (!/^[A-Z2-7]{55}$/.test(base32Part)) return false;
+  try {
+    // Use the Address class which validates StrKey format
+    new Address(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a value is a valid Stellar account address (G...).
+ * Validates prefix, length (56 characters), and StrKey checksum format.
+ * @param value - The value to validate
+ * @returns True if valid, false otherwise
+ */
+export function isAccountAddress(value: unknown): value is AccountAddress {
+  if (typeof value !== "string") return false;
+  if (!value.startsWith("G")) return false;
+  if (value.length !== 56) return false;
+  // Additional validation: account addresses use base32 encoding after the prefix
+  // Valid base32 characters: A-Z, 2-7
+  const base32Part = value.slice(1); // Remove the 'G' prefix
+  if (!/^[A-Z2-7]{55}$/.test(base32Part)) return false;
+  try {
+    // Use the Address class which validates StrKey format
+    new Address(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a value is a valid raw public key in hex format.
+ * @param value - The value to validate
+ * @returns True if valid (64 hex characters), false otherwise
+ */
+export function isPublicKeyHex(value: unknown): value is PublicKeyHex {
+  if (typeof value !== "string") return false;
+  if (value.length !== 64) return false;
+  return /^[0-9a-fA-F]{64}$/.test(value);
+}
+
 export interface ProtocolRule {
-  contract: string;
+  contract: ContractAddress;
   /** `null` means "any function on this contract". */
   fns: string[] | null;
 }
 
 export interface RecipientWindowCap {
-  recipient: string;
+  recipient: AccountAddress;
   cap: bigint;
 }
 
@@ -32,16 +128,16 @@ export interface PolicyConfig {
   per_tx_cap: bigint;
   window_secs: bigint;
   window_cap: bigint;
-  assets: string[];
+  assets: ContractAddress[];
   protocols: ProtocolRule[];
-  recipients: string[];
+  recipients: AccountAddress[];
   allow_any_recipient: boolean;
   active_from: bigint;
   active_until: bigint;
   paused: boolean;
   dms_grace_secs: bigint;
   recipient_window_caps?: RecipientWindowCap[];
-  blocked_recipients?: string[];
+  blocked_recipients?: AccountAddress[];
 }
 
 /**
@@ -84,7 +180,7 @@ export interface PolicyFailure {
 
 export interface ValidatePolicyOptions {
   /** Guard contract address used to enforce self-address rejection rules. */
-  guardAddress?: string;
+  guardAddress?: ContractAddress | string;
   /** Maximum allowed recipient entries (default: 256 per SPEC §8). */
   maxRecipientEntries?: number;
 }
