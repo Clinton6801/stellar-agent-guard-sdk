@@ -113,6 +113,29 @@ export function isPublicKeyHex(value: unknown): value is PublicKeyHex {
   return /^[0-9a-fA-F]{64}$/.test(value);
 }
 
+/**
+ * Unsafe cast helpers for test/fixture code.
+ * Use only when you're certain the value is valid (e.g., hardcoded test addresses).
+ * These bypass validation for convenience in tests.
+ *
+ * @internal For testing only
+ */
+export function unsafeContractAddress(value: string): ContractAddress {
+  return value as ContractAddress;
+}
+
+export function unsafeAccountAddress(value: string): AccountAddress {
+  return value as AccountAddress;
+}
+
+export function unsafeStrKeyAddress(value: string): StrKeyAddress {
+  return value as StrKeyAddress;
+}
+
+export function unsafePublicKeyHex(value: string): PublicKeyHex {
+  return value as PublicKeyHex;
+}
+
 export interface ProtocolRule {
   contract: ContractAddress;
   /** `null` means "any function on this contract". */
@@ -317,9 +340,9 @@ export function decodePolicy(scVal: xdr.ScVal): PolicyConfig {
         I128_MIN,
         I128_MAX,
       ),
-      assets: addressVector(fields.get("assets")!, "assets"),
+      assets: addressVector(fields.get("assets")!, "assets").map(a => a as ContractAddress),
       protocols: protocolRules(fields.get("protocols")!),
-      recipients: addressVector(fields.get("recipients")!, "recipients"),
+      recipients: addressVector(fields.get("recipients")!, "recipients").map(a => a as AccountAddress),
       allow_any_recipient: policyBoolean(
         fields.get("allow_any_recipient")!,
         "allow_any_recipient",
@@ -459,7 +482,23 @@ function policyAddress(scVal: xdr.ScVal, path: string): string {
 }
 
 function addressVector(scVal: xdr.ScVal, path: string): string[] {
-  return policyVec(scVal, path).map((item, index) => policyAddress(item, `${path}[${index}]`));
+  const addresses = policyVec(scVal, path).map((item, index) => policyAddress(item, `${path}[${index}]`));
+  // Cast each address based on context - caller is responsible for semantics
+  // For decodePolicy, the caller will know whether it's assets (ContractAddress) 
+  // or recipients (AccountAddress)
+  return addresses;
+}
+
+function protocolRules(scVal: xdr.ScVal): ProtocolRule[] {
+  return policyVec(scVal, "protocols").map((rule, index) => {
+    const path = `protocols[${index}]`;
+    const fields = symbolMap(rule, path, PROTOCOL_RULE_FIELDS);
+    const contractAddr = policyAddress(fields.get("contract")!, `${path}.contract`);
+    return {
+      contract: contractAddr as ContractAddress,
+      fns: functionSymbols(fields.get("fns")!, `${path}.fns`),
+    };
+  });
 }
 
 function functionSymbols(scVal: xdr.ScVal, path: string): string[] | null {
@@ -469,17 +508,6 @@ function functionSymbols(scVal: xdr.ScVal, path: string): string[] | null {
       throw policyDecodeFailure(`${path}[${index}]`, `expected Symbol, got ${item.type}`);
     }
     return String(scValToNative(item));
-  });
-}
-
-function protocolRules(scVal: xdr.ScVal): ProtocolRule[] {
-  return policyVec(scVal, "protocols").map((rule, index) => {
-    const path = `protocols[${index}]`;
-    const fields = symbolMap(rule, path, PROTOCOL_RULE_FIELDS);
-    return {
-      contract: policyAddress(fields.get("contract")!, `${path}.contract`),
-      fns: functionSymbols(fields.get("fns")!, `${path}.fns`),
-    };
   });
 }
 

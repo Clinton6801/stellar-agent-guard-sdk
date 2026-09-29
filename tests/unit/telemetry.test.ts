@@ -24,8 +24,9 @@ import {
   type GuardEvent,
   type GuardTelemetryGap,
 } from "../../src/telemetry.ts";
+import { unsafeContractAddress } from "../../src/policy.ts";
 
-const GUARD = "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44";
+const GUARD = unsafeContractAddress("CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44");
 
 /**
  * Build a diagnostic event in the shape the RPC returns: the host's own

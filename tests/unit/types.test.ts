@@ -8,7 +8,8 @@
  * - isPublicKeyHex: raw public keys in hex format
  */
 
-import { describe, it, expect } from "vitest";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import {
   isStrKeyAddress,
   isContractAddress,
@@ -26,7 +27,7 @@ describe("Type Guards", () => {
         "GCZST3XVCDTUJ76ZAV2HA72KYQJWKCPVNXS6XFTVMS7VHCBTEJUH45H3",
       ];
       for (const addr of validAccountAddresses) {
-        expect(isStrKeyAddress(addr)).toBe(true);
+        assert.ok(isStrKeyAddress(addr));
       }
     });
 
@@ -37,50 +38,52 @@ describe("Type Guards", () => {
         "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
       ];
       for (const addr of validContractAddresses) {
-        expect(isStrKeyAddress(addr)).toBe(true);
+        assert.ok(isStrKeyAddress(addr));
       }
     });
 
     it("should reject empty strings", () => {
-      expect(isStrKeyAddress("")).toBe(false);
+      assert.ok(!isStrKeyAddress(""));
     });
 
     it("should reject whitespace-only strings", () => {
-      expect(isStrKeyAddress("   ")).toBe(false);
+      assert.ok(!isStrKeyAddress("   "));
     });
 
     it("should reject invalid prefixes", () => {
-      expect(isStrKeyAddress("TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress("TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"),
       );
-      expect(isStrKeyAddress("XAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress("XAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"),
       );
     });
 
     it("should reject strings with invalid length", () => {
-      expect(isStrKeyAddress("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
       );
-      expect(isStrKeyAddress("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4EXTRA")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress(
+          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4EXTRA",
+        ),
       );
     });
 
     it("should reject non-string types", () => {
-      expect(isStrKeyAddress(null)).toBe(false);
-      expect(isStrKeyAddress(undefined)).toBe(false);
-      expect(isStrKeyAddress(123)).toBe(false);
-      expect(isStrKeyAddress({ address: "GB..." })).toBe(false);
-      expect(isStrKeyAddress([])).toBe(false);
+      assert.ok(!isStrKeyAddress(null));
+      assert.ok(!isStrKeyAddress(undefined));
+      assert.ok(!isStrKeyAddress(123));
+      assert.ok(!isStrKeyAddress({ address: "GB..." }));
+      assert.ok(!isStrKeyAddress([]));
     });
 
     it("should reject strings with invalid characters", () => {
-      expect(isStrKeyAddress("GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJP!")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress("GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJP!"),
       );
-      expect(isStrKeyAddress("GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJP#")).toBe(
-        false,
+      assert.ok(
+        !isStrKeyAddress("GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJP#"),
       );
     });
   });
@@ -92,7 +95,7 @@ describe("Type Guards", () => {
         "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
       ];
       for (const addr of validContractAddresses) {
-        expect(isContractAddress(addr)).toBe(true);
+        assert.ok(isContractAddress(addr));
       }
     });
 
@@ -102,50 +105,56 @@ describe("Type Guards", () => {
         "GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJPM",
       ];
       for (const addr of accountAddresses) {
-        expect(isContractAddress(addr)).toBe(false);
+        assert.ok(!isContractAddress(addr));
       }
     });
 
     it("should reject invalid prefix", () => {
-      expect(isContractAddress("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"),
       );
-      expect(isContractAddress("TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress("TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"),
       );
     });
 
     it("should reject invalid length", () => {
       // Too short
-      expect(isContractAddress("CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress("CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
       );
       // Too long
-      expect(isContractAddress("CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4EXTRA")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress(
+          "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4EXTRA",
+        ),
       );
     });
 
     it("should reject mixed case (contracts are case-sensitive)", () => {
-      expect(isContractAddress("ca7qkfukgmj5hghz6exw7h3ofukz5c5gn7nnfqn7n5npezrwwbqb7od")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress(
+          "ca7qkfukgmj5hghz6exw7h3ofukz5c5gn7nnfqn7n5npezrwwbqb7od",
+        ),
       );
     });
 
     it("should reject non-string types", () => {
-      expect(isContractAddress(null)).toBe(false);
-      expect(isContractAddress(undefined)).toBe(false);
-      expect(isContractAddress(123)).toBe(false);
-      expect(isContractAddress({ contract: "C..." })).toBe(false);
+      assert.ok(!isContractAddress(null));
+      assert.ok(!isContractAddress(undefined));
+      assert.ok(!isContractAddress(123));
+      assert.ok(!isContractAddress({ contract: "C..." }));
     });
 
     it("should reject empty strings", () => {
-      expect(isContractAddress("")).toBe(false);
+      assert.ok(!isContractAddress(""));
     });
 
     it("should reject strings with invalid characters", () => {
-      expect(isContractAddress("CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7O!")).toBe(
-        false,
+      assert.ok(
+        !isContractAddress(
+          "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7O!",
+        ),
       );
     });
   });
@@ -158,7 +167,7 @@ describe("Type Guards", () => {
         "GCZST3XVCDTUJ76ZAV2HA72KYQJWKCPVNXS6XFTVMS7VHCBTEJUH45H3",
       ];
       for (const addr of validAccountAddresses) {
-        expect(isAccountAddress(addr)).toBe(true);
+        assert.ok(isAccountAddress(addr));
       }
     });
 
@@ -168,51 +177,63 @@ describe("Type Guards", () => {
         "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
       ];
       for (const addr of contractAddresses) {
-        expect(isAccountAddress(addr)).toBe(false);
+        assert.ok(!isAccountAddress(addr));
       }
     });
 
     it("should reject invalid prefix", () => {
-      expect(
-        isAccountAddress("CBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2"),
-      ).toBe(false);
-      expect(
-        isAccountAddress("TBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2"),
-      ).toBe(false);
+      assert.ok(
+        !isAccountAddress(
+          "CBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2",
+        ),
+      );
+      assert.ok(
+        !isAccountAddress(
+          "TBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2",
+        ),
+      );
     });
 
     it("should reject invalid length", () => {
       // Too short
-      expect(isAccountAddress("GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL")).toBe(
-        false,
+      assert.ok(
+        !isAccountAddress(
+          "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL",
+        ),
       );
       // Too long
-      expect(
-        isAccountAddress("GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2EXTRA"),
-      ).toBe(false);
+      assert.ok(
+        !isAccountAddress(
+          "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2EXTRA",
+        ),
+      );
     });
 
     it("should reject mixed case", () => {
-      expect(
-        isAccountAddress("gbrpyhil2ci3whzdtooqfc6eb4cgqofn4l7mrje47jreumb5qfo6yl2"),
-      ).toBe(false);
+      assert.ok(
+        !isAccountAddress(
+          "gbrpyhil2ci3whzdtooqfc6eb4cgqofn4l7mrje47jreumb5qfo6yl2",
+        ),
+      );
     });
 
     it("should reject non-string types", () => {
-      expect(isAccountAddress(null)).toBe(false);
-      expect(isAccountAddress(undefined)).toBe(false);
-      expect(isAccountAddress(123)).toBe(false);
-      expect(isAccountAddress({ account: "G..." })).toBe(false);
+      assert.ok(!isAccountAddress(null));
+      assert.ok(!isAccountAddress(undefined));
+      assert.ok(!isAccountAddress(123));
+      assert.ok(!isAccountAddress({ account: "G..." }));
     });
 
     it("should reject empty strings", () => {
-      expect(isAccountAddress("")).toBe(false);
+      assert.ok(!isAccountAddress(""));
     });
 
     it("should reject strings with invalid characters", () => {
-      expect(
-        isAccountAddress("GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL!"),
-      ).toBe(false);
+      assert.ok(
+        !isAccountAddress(
+          "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL!",
+        ),
+      );
     });
   });
 
@@ -224,56 +245,66 @@ describe("Type Guards", () => {
         "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
       ];
       for (const key of validHexKeys) {
-        expect(isPublicKeyHex(key)).toBe(true);
+        assert.ok(isPublicKeyHex(key));
       }
     });
 
     it("should accept mixed case hex strings", () => {
-      expect(isPublicKeyHex("AbCdEf0123456789AbCdEf0123456789AbCdEf0123456789AbCdEf0123456789")).toBe(
-        true,
+      assert.ok(
+        isPublicKeyHex(
+          "AbCdEf0123456789AbCdEf0123456789AbCdEf0123456789AbCdEf0123456789",
+        ),
       );
     });
 
     it("should reject strings shorter than 64 characters", () => {
-      expect(isPublicKeyHex("abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345678")).toBe(
-        false,
+      assert.ok(
+        !isPublicKeyHex(
+          "abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345678",
+        ),
       );
     });
 
     it("should reject strings longer than 64 characters", () => {
-      expect(
-        isPublicKeyHex(
+      assert.ok(
+        !isPublicKeyHex(
           "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab",
         ),
-      ).toBe(false);
+      );
     });
 
     it("should reject strings with non-hex characters", () => {
-      expect(isPublicKeyHex("ghijkl0123456789abcdef0123456789abcdef0123456789abcdef0123456789")).toBe(
-        false,
+      assert.ok(
+        !isPublicKeyHex(
+          "ghijkl0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+        ),
       );
-      expect(isPublicKeyHex("abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345678!")).toBe(
-        false,
+      assert.ok(
+        !isPublicKeyHex(
+          "abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345678!",
+        ),
       );
     });
 
     it("should reject non-string types", () => {
-      expect(isPublicKeyHex(null)).toBe(false);
-      expect(isPublicKeyHex(undefined)).toBe(false);
-      expect(isPublicKeyHex(123)).toBe(false);
-      expect(isPublicKeyHex({ key: "..." })).toBe(false);
-      expect(isPublicKeyHex([])).toBe(false);
+      assert.ok(!isPublicKeyHex(null));
+      assert.ok(!isPublicKeyHex(undefined));
+      assert.ok(!isPublicKeyHex(123));
+      assert.ok(!isPublicKeyHex({ key: "..." }));
+      assert.ok(!isPublicKeyHex([]));
     });
 
     it("should reject empty strings", () => {
-      expect(isPublicKeyHex("")).toBe(false);
+      assert.ok(!isPublicKeyHex(""));
     });
 
     it("should reject whitespace", () => {
-      expect(isPublicKeyHex("   ")).toBe(false);
-      expect(
-        isPublicKeyHex(" abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"),
-      ).toBe(false);
+      assert.ok(!isPublicKeyHex("   "));
+      assert.ok(
+        !isPublicKeyHex(
+          " abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+        ),
+      );
     });
   });
 
@@ -282,49 +313,49 @@ describe("Type Guards", () => {
       const contractAddr = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4";
       const accountAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
 
-      expect(isContractAddress(contractAddr)).toBe(true);
-      expect(isAccountAddress(contractAddr)).toBe(false);
+      assert.ok(isContractAddress(contractAddr));
+      assert.ok(!isAccountAddress(contractAddr));
 
-      expect(isContractAddress(accountAddr)).toBe(false);
-      expect(isAccountAddress(accountAddr)).toBe(true);
+      assert.ok(!isContractAddress(accountAddr));
+      assert.ok(isAccountAddress(accountAddr));
     });
 
     it("should reject account address where contract is required", () => {
       const accountAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
-      expect(isContractAddress(accountAddr)).toBe(false);
+      assert.ok(!isContractAddress(accountAddr));
     });
 
     it("should reject contract address where account is required", () => {
       const contractAddr = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4";
-      expect(isAccountAddress(contractAddr)).toBe(false);
+      assert.ok(!isAccountAddress(contractAddr));
     });
 
     it("should not confuse public key hex with StrKey addresses", () => {
       const publicKeyHex = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
-      expect(isStrKeyAddress(publicKeyHex)).toBe(false);
-      expect(isPublicKeyHex(publicKeyHex)).toBe(true);
+      assert.ok(!isStrKeyAddress(publicKeyHex));
+      assert.ok(isPublicKeyHex(publicKeyHex));
     });
   });
 
   describe("Edge cases and security", () => {
     it("should reject StrKey addresses with leading/trailing whitespace", () => {
       const validAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
-      expect(isStrKeyAddress(` ${validAddr}`)).toBe(false);
-      expect(isStrKeyAddress(`${validAddr} `)).toBe(false);
-      expect(isStrKeyAddress(` ${validAddr} `)).toBe(false);
+      assert.ok(!isStrKeyAddress(` ${validAddr}`));
+      assert.ok(!isStrKeyAddress(`${validAddr} `));
+      assert.ok(!isStrKeyAddress(` ${validAddr} `));
     });
 
     it("should reject hex keys with leading zeros that don't make sense", () => {
       const validHex = "0000000000000000000000000000000000000000000000000000000000000000";
       const invalidPrefix = "00000000000000000000000000000000000000000000000000000000000000000";
-      expect(isPublicKeyHex(validHex)).toBe(true);
-      expect(isPublicKeyHex(invalidPrefix)).toBe(false);
+      assert.ok(isPublicKeyHex(validHex));
+      assert.ok(!isPublicKeyHex(invalidPrefix));
     });
 
     it("should be consistent across multiple calls", () => {
       const addr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
-      expect(isAccountAddress(addr)).toBe(isAccountAddress(addr));
-      expect(isContractAddress(addr)).toBe(isContractAddress(addr));
+      assert.equal(isAccountAddress(addr), isAccountAddress(addr));
+      assert.equal(isContractAddress(addr), isContractAddress(addr));
     });
   });
 });
