@@ -66,12 +66,8 @@ export function isContractAddress(value: unknown): value is ContractAddress {
   if (typeof value !== "string") return false;
   if (!value.startsWith("C")) return false;
   if (value.length !== 56) return false;
-  // Additional validation: contract addresses use base32 encoding after the prefix
-  // Valid base32 characters: A-Z, 2-7
-  const base32Part = value.slice(1); // Remove the 'C' prefix
-  if (!/^[A-Z2-7]{55}$/.test(base32Part)) return false;
   try {
-    // Use the Address class which validates StrKey format
+    // Use the Address class which validates StrKey format and checksum
     new Address(value);
     return true;
   } catch {
@@ -89,12 +85,8 @@ export function isAccountAddress(value: unknown): value is AccountAddress {
   if (typeof value !== "string") return false;
   if (!value.startsWith("G")) return false;
   if (value.length !== 56) return false;
-  // Additional validation: account addresses use base32 encoding after the prefix
-  // Valid base32 characters: A-Z, 2-7
-  const base32Part = value.slice(1); // Remove the 'G' prefix
-  if (!/^[A-Z2-7]{55}$/.test(base32Part)) return false;
   try {
-    // Use the Address class which validates StrKey format
+    // Use the Address class which validates StrKey format and checksum
     new Address(value);
     return true;
   } catch {
