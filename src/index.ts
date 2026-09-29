@@ -30,6 +30,12 @@ export {
 } from "./errors.ts";
 
 export {
+  Clock,
+  FakeClock,
+  systemClock,
+} from "./clock.ts";
+
+export {
   GuardBlockedError,
   ACCOUNT_STATE_REASONS,
   GUARD_REASON_CODES,
