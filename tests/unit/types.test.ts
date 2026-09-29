@@ -20,11 +20,11 @@ import {
 describe("Type Guards", () => {
   describe("isStrKeyAddress", () => {
     it("should accept valid account addresses (G...)", () => {
-      // Valid Stellar account addresses from the SDK test fixtures
+      // Valid Stellar account addresses (56 characters: G + 55 Base32)
       const validAccountAddresses = [
-        "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2",
-        "GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJPM",
-        "GCZST3XVCDTUJ76ZAV2HA72KYQJWKCPVNXS6XFTVMS7VHCBTEJUH45H3",
+        "GA6LHIWJKKNJWKJPJMDL4AOP6AHOGMSOGVYPMPTDU274YGYPD3US63HD",
+        "GB25CRKTZNLCD4672INIEIOMT72SIIMAOAKCQJYBMRSCTYYLDIBMSNIT",
+        "GBQ6534IKTU5JBJNKNWOIZCOKJULXVOERY2CCWH2GTDB4OK4QAK5KYLT",
       ];
       for (const addr of validAccountAddresses) {
         assert.ok(isStrKeyAddress(addr));
@@ -32,10 +32,10 @@ describe("Type Guards", () => {
     });
 
     it("should accept valid contract addresses (C...)", () => {
-      // Valid Stellar contract addresses
+      // Valid Stellar contract addresses from Phase 2 fixture
       const validContractAddresses = [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4",
-        "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
+        "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44",
+        "CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB",
       ];
       for (const addr of validContractAddresses) {
         assert.ok(isStrKeyAddress(addr));
@@ -91,8 +91,8 @@ describe("Type Guards", () => {
   describe("isContractAddress", () => {
     it("should accept valid contract addresses (C...)", () => {
       const validContractAddresses = [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4",
-        "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
+        "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44",
+        "CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB",
       ];
       for (const addr of validContractAddresses) {
         assert.ok(isContractAddress(addr));
@@ -101,8 +101,8 @@ describe("Type Guards", () => {
 
     it("should reject account addresses (G...)", () => {
       const accountAddresses = [
-        "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2",
-        "GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJPM",
+        "GA6LHIWJKKNJWKJPJMDL4AOP6AHOGMSOGVYPMPTDU274YGYPD3US63HD",
+        "GB25CRKTZNLCD4672INIEIOMT72SIIMAOAKCQJYBMRSCTYYLDIBMSNIT",
       ];
       for (const addr of accountAddresses) {
         assert.ok(!isContractAddress(addr));
@@ -162,9 +162,9 @@ describe("Type Guards", () => {
   describe("isAccountAddress", () => {
     it("should accept valid account addresses (G...)", () => {
       const validAccountAddresses = [
-        "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2",
-        "GB7BDSOOQCFFVLZ37PF5LTQVLNCJYJ5ONUH3MBIUCUSD4B2LGYXJJPM",
-        "GCZST3XVCDTUJ76ZAV2HA72KYQJWKCPVNXS6XFTVMS7VHCBTEJUH45H3",
+        "GA6LHIWJKKNJWKJPJMDL4AOP6AHOGMSOGVYPMPTDU274YGYPD3US63HD",
+        "GB25CRKTZNLCD4672INIEIOMT72SIIMAOAKCQJYBMRSCTYYLDIBMSNIT",
+        "GBQ6534IKTU5JBJNKNWOIZCOKJULXVOERY2CCWH2GTDB4OK4QAK5KYLT",
       ];
       for (const addr of validAccountAddresses) {
         assert.ok(isAccountAddress(addr));
@@ -173,8 +173,8 @@ describe("Type Guards", () => {
 
     it("should reject contract addresses (C...)", () => {
       const contractAddresses = [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4",
-        "CA7QKFUKGMJ5HGHZ6EXW7H3OFUKZ5C5GN7NNFQN7N5NPEZRWWBQB7OD",
+        "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44",
+        "CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB",
       ];
       for (const addr of contractAddresses) {
         assert.ok(!isAccountAddress(addr));
@@ -310,8 +310,8 @@ describe("Type Guards", () => {
 
   describe("Type guard cross-validation (addressing wrong type usage)", () => {
     it("should distinguish contract address from account address", () => {
-      const contractAddr = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4";
-      const accountAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
+      const contractAddr = "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44";
+      const accountAddr = "GDCPT4Z3MBH7X6IX6A6BHIENUL7DRZ44O2SL2V72QJVOEJHJROP3PQDG";
 
       assert.ok(isContractAddress(contractAddr));
       assert.ok(!isAccountAddress(contractAddr));
@@ -321,12 +321,12 @@ describe("Type Guards", () => {
     });
 
     it("should reject account address where contract is required", () => {
-      const accountAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
+      const accountAddr = "GDCPT4Z3MBH7X6IX6A6BHIENUL7DRZ44O2SL2V72QJVOEJHJROP3PQDG";
       assert.ok(!isContractAddress(accountAddr));
     });
 
     it("should reject contract address where account is required", () => {
-      const contractAddr = "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4";
+      const contractAddr = "CAPADGEK457RHKN4RYVUMDJTFHDSG7R5HREQONKLYK7MFKC5WFENPP44";
       assert.ok(!isAccountAddress(contractAddr));
     });
 
@@ -339,7 +339,7 @@ describe("Type Guards", () => {
 
   describe("Edge cases and security", () => {
     it("should reject StrKey addresses with leading/trailing whitespace", () => {
-      const validAddr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
+      const validAddr = "GA6LHIWJKKNJWKJPJMDL4AOP6AHOGMSOGVYPMPTDU274YGYPD3US63HD";
       assert.ok(!isStrKeyAddress(` ${validAddr}`));
       assert.ok(!isStrKeyAddress(`${validAddr} `));
       assert.ok(!isStrKeyAddress(` ${validAddr} `));
@@ -353,7 +353,7 @@ describe("Type Guards", () => {
     });
 
     it("should be consistent across multiple calls", () => {
-      const addr = "GBRPYHIL2CI3WHZDTOOQFC6EB4CGQOFN4L7MRJE47JREUMB5QFO6YL2";
+      const addr = "GA6LHIWJKKNJWKJPJMDL4AOP6AHOGMSOGVYPMPTDU274YGYPD3US63HD";
       assert.equal(isAccountAddress(addr), isAccountAddress(addr));
       assert.equal(isContractAddress(addr), isContractAddress(addr));
     });

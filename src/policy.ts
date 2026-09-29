@@ -13,7 +13,7 @@
  * caps are `i128` and silently narrowing them to `number` would lose precision
  * on exactly the values a spend guard exists to compare.
  */
-import { Address, nativeToScVal, rpc, scValToNative, xdr } from "@stellar/stellar-sdk";
+import { Address, nativeToScVal, rpc, scValToNative, StrKey, xdr } from "@stellar/stellar-sdk";
 import { ContractResponseError, PolicyDecodeError } from "./errors.ts";
 import type { ContractCall } from "./tx.ts";
 
@@ -48,12 +48,13 @@ export type PublicKeyHex = string & { readonly __brand: "PublicKeyHex" };
  */
 export function isStrKeyAddress(value: unknown): value is StrKeyAddress {
   if (typeof value !== "string") return false;
-  try {
-    new Address(value);
-    return true;
-  } catch {
-    return false;
-  }
+  if (value.length !== 56) return false;
+  if (!value.match(/^[GC][A-Z2-7]{55}$/)) return false;
+  // Use SDK's StrKey validation for both account (G) and contract (C) addresses
+  return (
+    (value.startsWith("G") && StrKey.isValidEd25519PublicKey(value)) ||
+    (value.startsWith("C") && StrKey.isValidContract(value))
+  );
 }
 
 /**
@@ -66,13 +67,8 @@ export function isContractAddress(value: unknown): value is ContractAddress {
   if (typeof value !== "string") return false;
   if (!value.startsWith("C")) return false;
   if (value.length !== 56) return false;
-  try {
-    // Use the Address class which validates StrKey format and checksum
-    new Address(value);
-    return true;
-  } catch {
-    return false;
-  }
+  if (!value.match(/^C[A-Z2-7]{55}$/)) return false;
+  return StrKey.isValidContract(value);
 }
 
 /**
@@ -85,13 +81,8 @@ export function isAccountAddress(value: unknown): value is AccountAddress {
   if (typeof value !== "string") return false;
   if (!value.startsWith("G")) return false;
   if (value.length !== 56) return false;
-  try {
-    // Use the Address class which validates StrKey format and checksum
-    new Address(value);
-    return true;
-  } catch {
-    return false;
-  }
+  if (!value.match(/^G[A-Z2-7]{55}$/)) return false;
+  return StrKey.isValidEd25519PublicKey(value);
 }
 
 /**
