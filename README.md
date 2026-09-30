@@ -1,3 +1,4 @@
+<!-- npm keywords: stellar, soroban, ai-agents, guardrails, stellar-sdk, policy, firewall, langchain, elizaos, non-custodial, smart-account, custom-account-abstraction, spend-limits, allowlist, telemetry, typescript, web3, blockchain-security -->
 <p align="center">
 <img src="Gemini_Generated_Image_mvimg2mvimg2mvim.jpeg" alt="Stellar Agent Guard" width="700"/>
 </p>
@@ -666,6 +667,27 @@ one-shot form.
 - `isDeadManFrozen(status: GuardStatus): boolean`
 - `deadManRemaining(status: GuardStatus, policy: PolicyConfig | null): bigint | null`
 
+#### Dashboard-style snapshot (issue #68)
+
+A consumer that wants "the last N decisions, right now" — a dashboard panel, an agent status endpoint — can opt into a bounded in-memory window instead of maintaining its own store:
+
+```ts
+import { GuardTelemetryListener } from "stellar-agent-guard-sdk";
+
+const listener = new GuardTelemetryListener({
+  server,
+  guard: GUARD_ID,
+  buffer: { max: 200 }, // opt-in; omitted → no buffer is allocated
+});
+
+// ...drive it with listener.watch() or listener.watchAll(), then read on demand:
+const lastBlocked = listener.recent({ stream: "diagnostic" });
+const capRefusals = listener.recent({ reason: "per_tx_cap_exceeded" });
+const recentWindow = listener.recent({ fromLedger: 4_700_000 });
+```
+
+`recent(filter?)` returns the retained events oldest-first, filtered by any of `stream`, `reason`, `fromLedger`, `toLedger`. The buffer is FIFO and non-durable: it holds only what this listener decoded in this process, and a restart empties it. Persistence across restarts is a cursor store (tracked separately), not something this buffer pretends to provide.
+
 ## Architecture
 
 Stellar Agent Guard operates across three dedicated repositories:
@@ -710,6 +732,20 @@ Proven against a real deployed instance on Stellar testnet (protocol 28, `Test S
 - **SAC Token**: `CDCYDGBGS5AZ5BZS6XY2SK2PHJHSOEGTN3N4INCK34KF6GU2BGC7Z6MB`
 - **WASM bytecode hash**: `f47919f92e78fdd034836aa61955fc338dd56a218c448c37df1867a8c3da0f63` (identical to Phase 1 artifact)
 
+Verify a downloaded artifact against the pinned hash before deploying — the same constant the dashboard checks, so there is one source of truth rather than a copy per consumer:
+
+```ts
+import { readFileSync } from "node:fs";
+import { verifyGuardWasm } from "stellar-agent-guard-sdk";
+
+const result = await verifyGuardWasm(readFileSync("guard.wasm"));
+if (!result.ok) {
+  throw new Error(`WASM mismatch: got ${result.actual}, expected ${result.expected}`);
+}
+```
+
+`verifyGuardWasm` hashes with WebCrypto (`crypto.subtle`), so the identical call runs in Node and in the browser and needs no extra dependency. It is async, because `crypto.subtle.digest` is. `GUARD_WASM_HASH` is exported if you need the constant on its own.
+
 ### 5/5 Live Enforcement Scenarios
 
 | Scenario | Condition | Result | Evidence |
@@ -734,6 +770,11 @@ Complete run output and assertion logs are preserved in [`tests/fixtures/integra
 Full recipient/amount enforcement — spend caps, allowlists, per-transaction limits — is native and automatic for SAC token transfers (`transfer`/`transfer_from`), since these are the calls whose arguments the Soroban auth context exposes for inspection. For other Soroban contract calls made by the guarded account (arbitrary DEX/lending/protocol calls), the policy engine still enforces window and pause state, but per-call amount/recipient limits are not yet enforced — extending fine-grained enforcement to arbitrary calls is tracked as a v2 item, not implied as already covered.
 
 This boundary is an inherent property of the platform (the auth context does not expose arbitrary call arguments generically), not a gap this project hides or overclaims. The classification that produces this boundary (`AssetTransfer` vs `Protocol` vs `Unknown` default-deny) is spelled out in SPEC §6.
+
+## Topics
+
+`stellar`, `soroban`, `ai-agents`, `guardrails`, `custom-account`, `pre-flight`,
+`spend-limits`, `cost-estimation`, `langchain`, `elizaos`, `telemetry`, `typescript`
 
 ## Maintainers
 
